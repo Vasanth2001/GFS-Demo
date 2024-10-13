@@ -54,13 +54,14 @@ class Server:
         try:
             file_name = client_socket.recv(4096).decode().strip()
             print(f"Client requested: {file_name}")
-            
+        
             # Check if the file is managed by this server
             if file_name in self.files and os.path.exists(self.files[file_name]):
-                with open(self.files[file_name], 'r') as f:
-                    file_data = f.read()
-                client_socket.sendall(file_data.encode())
-                print(f"Sent file {file_name} to client")
+                with open(self.files[file_name], 'rb') as f:  # Open in binary mode
+                    # Send file in chunks to avoid reading the entire file into memory at once
+                    while chunk := f.read(4096):  # Read file in 4KB chunks
+                        client_socket.sendall(chunk)
+                    print(f"Sent file {file_name} to client")
             else:
                 client_socket.sendall(f"File {file_name} not found on this server.".encode())
                 print(f"File {file_name} not found on server")
@@ -68,6 +69,7 @@ class Server:
             print(f"Error handling client request: {e}")
         finally:
             client_socket.close()
+
 
 def start_server_thread(server_id, server_address, server_port):
     server = Server(server_id)
