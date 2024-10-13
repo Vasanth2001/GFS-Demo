@@ -1,0 +1,11 @@
+{
+  "file1.txt": {
+    "replicas": ["server1", "server2", "server3"]
+  },
+  "file2.txt": {
+    "replicas": ["server2", "server4", "server5"]
+  },
+  "file3.txt": {
+    "replicas": ["server1", "server3", "server5"]
+  }
+}

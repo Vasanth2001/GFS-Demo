@@ -1,0 +1,87 @@
+
+Main menu
+ 
+WikipediaThe Free Encyclopedia
+
+Search
+Donate
+Create account
+Log in
+
+Personal tools
+Contents  hide
+(Top)
+Introduction
+Patterns
+Parallel and distributed computing
+History
+Architectures
+Applications
+Examples
+Reactive distributed systems
+Theoretical foundations
+Toggle Theoretical foundations subsection
+Models
+An example
+Complexity measures
+Other problems
+Election
+Properties of distributed systems
+See also
+Notes
+References
+Further reading
+External links
+Distributed computing
+
+51 languages
+Article
+Talk
+Read
+Edit
+View history
+
+Tools
+Appearance  hide
+Text
+
+Small
+
+Standard
+
+Large
+Width
+
+Standard
+
+Wide
+Color (beta)
+
+Automatic
+
+Light
+
+Dark
+From Wikipedia, the free encyclopedia
+Not to be confused with Decentralized computing.
+Distributed computing is a field of computer science that studies distributed systems, defined as computer systems whose inter-communicating components are located on different networked computers.[1][2]
+
+The components of a distributed system communicate and coordinate their actions by passing messages to one another in order to achieve a common goal. Three significant challenges of distributed systems are: maintaining concurrency of components, overcoming the lack of a global clock, and managing the independent failure of components.[1] When a component of one system fails, the entire system does not fail.[3] Examples of distributed systems vary from SOA-based systems to microservices to massively multiplayer online games to peer-to-peer applications. Distributed systems cost significantly more than monolithic architectures, primarily due to increased needs for additional hardware, servers, gateways, firewalls, new subnets, proxies, and so on.[4] Also, distributed systems are prone to fallacies of distributed computing. On the other hand, a well designed distributed system is more scalable, more durable, more changeable and more fine-tuned than a monolithic application deployed on a single machine.[5] According to Marc Brooker: "a system is scalable in the range where marginal cost of additional workload is nearly constant." Serverless technologies fit this definition but you need to consider total cost of ownership not just the infra cost. [6]
+
+A computer program that runs within a distributed system is called a distributed program,[7] and distributed programming is the process of writing such programs.[8] There are many different types of implementations for the message passing mechanism, including pure HTTP, RPC-like connectors and message queues.[9]
+
+Distributed computing also refers to the use of distributed systems to solve computational problems. In distributed computing, a problem is divided into many tasks, each of which is solved by one or more computers,[10] which communicate with each other via message passing.[11]
+
+Introduction
+The word distributed in terms such as "distributed system", "distributed programming", and "distributed algorithm" originally referred to computer networks where individual computers were physically distributed within some geographical area.[12] The terms are nowadays used in a much wider sense, even referring to autonomous processes that run on the same physical computer and interact with each other by message passing.[11]
+
+While there is no single definition of a distributed system,[13] the following defining properties are commonly used as:
+
+There are several autonomous computational entities (computers or nodes), each of which has its own local memory.[14]
+The entities communicate with each other by message passing.[15]
+A distributed system may have a common goal, such as solving a large computational problem;[16] the user then perceives the collection of autonomous processors as a unit. Alternatively, each computer may have its own user with individual needs, and the purpose of the distributed system is to coordinate the use of shared resources or provide communication services to the users.[17]
+
+Other typical properties of distributed systems include the following:
+
+The system has to tolerate failures in individual computers.[18]
+The structure of the sy
