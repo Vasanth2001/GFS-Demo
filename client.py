@@ -63,12 +63,7 @@ class Client:
                 return
 
             # Step 3: Retrieve the file from the specified chunk server
-            file_data = self.retrieve_file_from_chunk_server(file_name, chunk_server_address)
-            
-            # Write the file data to a temporary file
-            with open(self.temp_file_path, 'w') as temp_file:
-                temp_file.write(file_data)
-            print(f"File written to {self.temp_file_path}")
+            self.retrieve_file_from_chunk_server(file_name, chunk_server_address)
 
         except socket.error as e:
             print(f"Error sending request to Master Server: {e}")
@@ -85,16 +80,19 @@ class Client:
             print(f"Requested file '{file_name}' from Chunk Server at {chunk_server_address}")
 
             # Step 6: Receive the file data from the Chunk Server
-            file_data = chunk_socket.recv(4096).decode()  # Adjust buffer size as needed
-            print(f"Received file data from Chunk Server: {file_data[:50]}... (truncated)")
+            with open(self.temp_file_path, 'wb') as temp_file:  # Open the file in binary mode
+                while True:
+                    file_data = chunk_socket.recv(4096)  # Receive file in chunks of 4096 bytes
+                    if not file_data:
+                        print("No more data received from the Chunk Server.")
+                        break  # End of file transfer
+                    temp_file.write(file_data)  # Write received binary data to the temp file
+                print(f"File successfully written to {self.temp_file_path}")
 
             chunk_socket.close()
-            return file_data
 
         except socket.error as e:
             print(f"Error retrieving file from Chunk Server: {e}")
-            return ""
-
 
 # Define a handler function with a while True loop
 def client_handler():
