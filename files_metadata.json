@@ -1,11 +1,14 @@
 {
   "file1.txt": {
+    "primary": "server1",
     "replicas": ["server1", "server2", "server3"]
   },
   "file2.txt": {
+    "primary": "server2",
     "replicas": ["server2", "server4", "server5"]
   },
   "file3.txt": {
+    "primary": "server5",
     "replicas": ["server1", "server3", "server5"]
   }
 }
