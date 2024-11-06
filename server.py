@@ -113,16 +113,22 @@ class Server:
                         print(f"Write failed on secondary server {self.server_id}")
 
             # Handle read requests (not server_type dependent)
-            elif request_type == "read":
+            if request_type == "read":
                 print(f"Client requested to read: {file_name}")
                 if file_name in self.files and os.path.exists(self.files[file_name]):
-                    with open(self.files[file_name], 'rb') as f:
-                        while chunk := f.read(4096):
-                            client_socket.sendall(chunk)
-                    print(f"Sent file {file_name} to client")
+                    # Open and send the file contents in chunks
+                    try:
+                        with open(self.files[file_name], 'rb') as f:
+                            while chunk := f.read(4096):
+                                client_socket.sendall(chunk)
+                        print(f"Sent file {file_name} to client")
+                    except Exception as e:
+                        print(f"Error reading file {file_name}: {e}")
+                        client_socket.sendall(f"Error: Could not read file {file_name}".encode())
                 else:
-                    client_socket.sendall(f"Error: File {file_name} not found on server.".encode())
-                    print(f"File {file_name} not found on server")
+                    error_message = f"Error: File {file_name} not found on server."
+                    print(error_message)
+                    client_socket.sendall(error_message.encode())
 
             else:
                 print(f"Unknown request type {request_type}")
