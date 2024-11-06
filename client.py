@@ -35,7 +35,7 @@ class Client:
                 self.client_socket.connect((self.master_address, self.master_port))
                 print(f"Connected to Master Server at {self.master_address}:{self.master_port}")
                 return  # Exit function after successful connection
-            except socket.timeout as e:
+            except Exception as e:
                 print(f"Connection timed out after {socket_timeout} seconds. Retrying...")
                 attempts += 1
                 error_code = e.errno
@@ -49,20 +49,31 @@ class Client:
 
     def request_file(self, file_name):
         try:
-            # Step 1: Send file name request to the Master Server
-            self.client_socket.sendall(file_name.encode())
-            print(f"Requested file '{file_name}' from Master Server")
+            # Step 1: Construct a read request in JSON format
+            request = json.dumps({"type": "read", "file_name": file_name})
             
-            # Step 2: Receive the chunk server address from the Master Server
-            chunk_server_address = self.client_socket.recv(4096).decode().strip()
+            # Step 2: Send the read request to the Master Server
+            self.client_socket.sendall(request.encode())
+            print(f"Sent read request for file '{file_name}' to Master Server")
+
+            # Step 3: Receive the chunk server address from the Master Server
+            chunk_server_response = self.client_socket.recv(4096).decode().strip()
+            
+            # Check if the response is an error message
+            if "Error" in chunk_server_response:
+                print(f"Error from Master Server: {chunk_server_response}")
+                return
+            
+            # Step 4: Parse the chunk server address
+            chunk_server_address = chunk_server_response
             print(f"Received chunk server address from Master Server: {chunk_server_address}")
-            
-            # Check if chunk_server_address is in the format 'host:port'
+
+            # Ensure the chunk server address format is correct ('host:port')
             if ':' not in chunk_server_address:
                 print(f"Invalid chunk server address format: {chunk_server_address}")
                 return
 
-            # Step 3: Retrieve the file from the specified chunk server
+            # Step 5: Retrieve the file from the specified chunk server
             self.retrieve_file_from_chunk_server(file_name, chunk_server_address)
 
         except socket.error as e:
@@ -94,23 +105,68 @@ class Client:
         except socket.error as e:
             print(f"Error retrieving file from Chunk Server: {e}")
 
+    def write_file(self, file_name, data):
+            attempt = 0
+            while attempt < self.retry_attempts:
+                try:
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as master_socket:
+                        master_socket.connect((self.master_address, self.master_port))
+                        write_request = {
+                            "type": "write",
+                            "file_name": file_name
+                        }
+                        master_socket.sendall(json.dumps(write_request).encode())
+                        
+                        primary_server_info = master_socket.recv(4096).decode()
+                        primary_server = json.loads(primary_server_info)
+                        primary_address, primary_port = primary_server["address"], primary_server["port"]
+                        print(f"Received primary server address: {primary_address}:{primary_port}")
+
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as primary_socket:
+                        primary_socket.connect((primary_address, primary_port))
+                        write_data = {
+                            "type": "write",
+                            "file_name": file_name,
+                            "data": data,
+                            "server": "primary"
+                        }
+                        primary_socket.sendall(json.dumps(write_data).encode())
+
+                        response = primary_socket.recv(4096).decode()
+                        if response == "Write success":
+                            print("Write operation completed successfully.")
+                            return True  # Write successful, exit function
+                        else:
+                            print("Primary chunk server failed to commit write. Retrying...")
+                            attempt += 1
+                            time.sleep(self.retry_delay)
+
+                except Exception as e:
+                    print(f"Error in write operation attempt {attempt + 1}: {e}")
+                    attempt += 1
+                    time.sleep(self.retry_delay)
+
+            print("Write operation failed after all retry attempts.")
+            return False
+
 # Define a handler function with a while True loop
 def client_handler():
-    # Load client configuration from 'mserver_config.json'
     client = Client("mserver_config.json")
     
-    # Keep trying to connect to the master and request files
     while True:
-        # Connect to the Master Server
         client.connect_to_master()
         
-        # Request a file from the Master Server (user input)
-        file_name = input("Enter the file name you want to request (or 'exit' to quit): ").strip()
-        if file_name.lower() == 'exit':
+        choice = input("Enter 'read' to read a file or 'write' to write data to a file (or 'exit' to quit): ").strip().lower()
+        if choice == 'exit':
             print("Exiting client.")
             break
-
-        client.request_file(file_name)
+        elif choice == 'read':
+            file_name = input("Enter the file name you want to request: ").strip()
+            client.request_file(file_name)
+        elif choice == 'write':
+            file_name = input("Enter the file name you want to write to: ").strip()
+            data = input("Enter the data you want to write: ").strip()
+            client.write_file(file_name, data)
 
 
 # Main function to call the handler
