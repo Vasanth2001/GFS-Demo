@@ -129,12 +129,14 @@ class MasterServer:
             # For read requests, return any available server
             return self.select_any_server(file_name)
 
-    def select_primary_server(self, file_name):
-        # Select a healthy server with the lowest load
+    def select_any_server(self, file_name):
         available_servers = [server for server in self.chunk_servers if self.server_status[server['name']]]
         if available_servers:
-            return min(available_servers, key=lambda server: self.server_loads[server['name']])
+            least_loaded_server = min(available_servers, key=lambda server: self.server_loads[server['name']])
+            self.server_loads[least_loaded_server['name']] += 1
+            return f"{least_loaded_server['address']}:{least_loaded_server['port']}"
         return None
+
 
     def notify_primary_server(self, primary_server, file_name):
         try:
