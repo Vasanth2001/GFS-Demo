@@ -87,7 +87,8 @@ class Client:
             chunk_socket.connect((host, int(port)))
 
             # Step 5: Send the file request to the Chunk Server
-            chunk_socket.sendall(file_name.encode())
+            request = json.dumps({"type": "read", "file_name": file_name})
+            chunk_socket.sendall(request.encode())
             print(f"Requested file '{file_name}' from Chunk Server at {chunk_server_address}")
 
             # Step 6: Receive the file data from the Chunk Server
